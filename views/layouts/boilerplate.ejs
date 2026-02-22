@@ -25,9 +25,11 @@
       referrerpolicy="no-referrer"
     />
   </head>
-  <body>
+  <body class="d-flex flex-column min-vh-100">
     <%- include("../includes/navbar.ejs") %>
-    <div class="container"><%- body %></div>
+    <div class="container flex-grow-1">
+      <%- include("../includes/flash.ejs") %> <%- body %>
+    </div>
     <%- include("../includes/footer.ejs") %>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"

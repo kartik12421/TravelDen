@@ -10,13 +10,11 @@
       alt="listing_image"
     />
     <div class="card-body">
-      <p class="card-text">
-        <br />
-        <%= listingId.description %><br />
-        &#8377; <%= listingId.price.toLocaleString("en-IN") %><br />
-        <%= listingId.location %><br />
-        <%= listingId.country %><br />
-      </p>
+      <p class="card-text">Ownwd by: <i><%= listingId.owner.username %></i></p>
+      <p class="card-text"><%= listingId.description %></p>
+      <p class="card-text">&#8377; <%= listingId.price.toLocaleString("en-IN") %></p>
+      <p class="card-text"><%= listingId.location %></p>
+      <p class="card-text"><%= listingId.country %></p>
     </div>
   </div>
 </div>
@@ -33,7 +31,7 @@
 
 <hr />
 
-<div class="col-12 offset-2">
+<div class="col-6 offset-2">
   <h4>Leave a review</h4>
   <form
     method="post"
@@ -81,7 +79,7 @@
       <form
         class="mb-3 mt-3"
         method="post"
-        action="/listings/<%=listingId._id%>/reviews/<%=review._id%>"
+        action="/listings/<%=listingId._id%>/reviews/<%=review._id%>?_method=delete"
       >
         <button class="btn btn-sm btn-dark">Delete</button>
       </form>
@@ -89,3 +87,4 @@
     <%}%>
   </div>
 </div>
+
