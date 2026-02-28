@@ -18,7 +18,9 @@
     </div>
   </div>
 </div>
-<div class="show-btn mt-3">
+
+<% if (currentStatus && listingId.owner._id.equals(currentStatus._id)) { %>
+  <div class="show-btn mt-3">
   <a
     href="/listings/<%=listingId._id%>/edit"
     class="btn btn-dark col-1 offset-2 edit-btn"
@@ -28,11 +30,16 @@
     <button class="btn btn-dark offset-4">Delete</button>
   </form>
 </div>
+<% } %>
+  
+
 
 <hr />
 
 <div class="col-6 offset-2">
-  <h4>Leave a review</h4>
+
+  <% if(currentStatus) { %>
+    <h4>Leave a review</h4>
   <form
     method="post"
     action="/listings/<%=listingId._id%>/reviews"
@@ -64,6 +71,8 @@
     </div>
     <button class="btn btn-outline-dark mb-3 mt-3">Submit</button>
   </form>
+  <% } %>
+  
 
   <hr />
 
@@ -72,7 +81,7 @@
     <% for(review of listingId.reviews) { %>
     <div class="card col-5 mb-3 ms-3">
       <div class="card-body">
-        <h5 class="card-title">KJ</h5>
+        <b><h5 class="card-title">@<%=review.author.username%></h5></b>
         <p class="card-text"><%=review.comment%></p>
         <p class="card-text"><%=review.rating%> stars</p>
       </div>

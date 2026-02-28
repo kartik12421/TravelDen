@@ -7,9 +7,13 @@ let reviewSchema = new mongoose.Schema({
     min: 1,
     max: 5,
   },
-  createdat: {
+  createdate: {
     type: Date,
     default: Date.now(),
+  },
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
   },
 });
 
