@@ -1,8 +1,25 @@
 <% layout("layouts/boilerplate.ejs") %>
-<form method="post" action="/listings" novalidate class="needs-validation">
+<form method="post" action="/listings" novalidate class="needs-validation" enctype="multipart/form-data">
   <div class="row mt-3">
     <div class="col-8 offset-2">
       <h3>Create a New Listing:</h3>
+      <div class="mb-3">
+        <label for="category" class="form-label">Category</label>
+        <select name="listing[category]" class="form-select" required>
+          <option value="" selected disabled>Select category</option>
+          <option value="room">Room</option>
+          <option value="iconic_cities">Iconic Cities</option>
+          <option value="mountains">Mountains</option>
+          <option value="castles">Castles</option>
+          <option value="amazing_pools">Amazing Pools</option>
+          <option value="camping">Camping</option>
+          <option value="farms">Farms</option>
+          <option value="arctic">Arctic</option>
+          <option value="other">Other</option>
+        </select>
+        <div class="invalid-feedback">Please choose a category.</div>
+      </div>
+
       <div class="mb-3">
         <label for="title" class="form-label">Title</label>
         <input
@@ -30,12 +47,12 @@
       </div>
 
       <div class="mb-3">
-        <label for="img" class="form-label">Image URL/Link</label>
+        <label for="img" class="form-label">Upload Image</label>
         <input
-          name="listing[image][url]"
-          placeholder="Enter image URL/Link"
-          type="url"
+          name="listing[image]"
+          type="file"
           class="form-control"
+          required
         />
       </div>
 

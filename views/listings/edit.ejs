@@ -4,10 +4,27 @@
   action="/listings/<%=listingId._id%>?_method=put"
   novalidate
   class="needs-validation"
+  enctype="multipart/form-data"
 >
   <div class="row mt-3">
     <div class="col-8 offset-2">
       <h3>Edit Your Listing:</h3>
+      <div class="mb-3">
+        <label for="category" class="form-label">Category</label>
+        <select name="listing[category]" class="form-select" required>
+          <option value="room" <%= listingId.category === "room" ? "selected" : "" %>>Room</option>
+          <option value="iconic_cities" <%= listingId.category === "iconic_cities" ? "selected" : "" %>>Iconic Cities</option>
+          <option value="mountains" <%= listingId.category === "mountains" ? "selected" : "" %>>Mountains</option>
+          <option value="castles" <%= listingId.category === "castles" ? "selected" : "" %>>Castles</option>
+          <option value="amazing_pools" <%= listingId.category === "amazing_pools" ? "selected" : "" %>>Amazing Pools</option>
+          <option value="camping" <%= listingId.category === "camping" ? "selected" : "" %>>Camping</option>
+          <option value="farms" <%= listingId.category === "farms" ? "selected" : "" %>>Farms</option>
+          <option value="arctic" <%= listingId.category === "arctic" ? "selected" : "" %>>Arctic</option>
+          <option value="other" <%= listingId.category === "other" ? "selected" : "" %>>Other</option>
+        </select>
+        <div class="invalid-feedback">Please choose a category.</div>
+      </div>
+
       <div class="mb-3">
         <label for="title" class="form-label">Title</label>
         <input
@@ -34,14 +51,13 @@
       </div>
 
       <div class="mb-3">
-        <label for="img" class="form-label">Image URL/Link</label>
-        <input
-          name="listing[image][url]"
-          value="<%= listingId.image.url %>"
-          type="url"
-          class="form-control"
-          required
-        />
+        Original Listing Image <br />
+        <img src="<%=originaImageUrl%>" alt="edit_image" />
+      </div>
+
+      <div class="mb-3">
+        <label for="img" class="form-label">Upload new Image</label>
+        <input name="listing[image]" type="file" class="form-control" />
       </div>
 
       <div class="mb-3">

@@ -1,11 +1,17 @@
 <% layout("layouts/boilerplate.ejs") %>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
 <div class="row mt-3">
   <div class="col-12 offset-2">
     <h3><b><%= listingId.title %></b></h3>
   </div>
   <div class="card listing-card col-6 offset-2">
     <img
-      src="<%= listingId.image.url %>>"
+      src="<%= listingId.image.url %>"
       class="card-img-top show-img"
       alt="listing_image"
     />
@@ -19,7 +25,7 @@
   </div>
 </div>
 
-<% if (currentStatus && listingId.owner._id.equals(currentStatus._id)) { %>
+<% if (typeof currentStatus !== 'undefined' && currentStatus && listingId.owner._id.equals(currentStatus._id)) { %>
   <div class="show-btn mt-3">
   <a
     href="/listings/<%=listingId._id%>/edit"
@@ -38,7 +44,7 @@
 
 <div class="col-6 offset-2">
 
-  <% if(currentStatus) { %>
+  <% if(typeof currentStatus !== 'undefined' && currentStatus) { %>
     <h4>Leave a review</h4>
   <form
     method="post"
@@ -46,16 +52,23 @@
     novalidate
     class="needs-validation"
   >
+
+    <label for="rating" class="form-label">Rating</label>
     <div class="mb-3 mt-3">
-      <label for="rating" class="form-label">Rating</label>
-      <input
-        type="range"
-        min="1"
-        max="5"
-        id="rating"
-        name="review[rating]"
-        class="form-range"
-      />
+      <fieldset class="starability-slot">
+      <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
+      <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+      <label for="first-rate1" title="Terrible">1 star</label>
+      <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+      <label for="first-rate2" title="Not good">2 stars</label>
+      <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+      <label for="first-rate3" title="Average">3 stars</label>
+      <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+      <label for="first-rate4" title="Very good">4 stars</label>
+      <input type="radio" id="first-rate5" name="review[rating]" value="5" />
+      <label for="first-rate5" title="Amazing">5 stars</label>
+    </fieldset>
+
     </div>
     <div class="mb-3 mt-3">
       <label for="comment" class="form-label">Comment</label>
@@ -82,18 +95,129 @@
     <div class="card col-5 mb-3 ms-3">
       <div class="card-body">
         <b><h5 class="card-title">@<%=review.author.username%></h5></b>
+        <p class="starability-result card-text" data-rating=<%=review.rating%>></p>
         <p class="card-text"><%=review.comment%></p>
-        <p class="card-text"><%=review.rating%> stars</p>
       </div>
-      <form
+      <% if (typeof currentStatus !== 'undefined' && currentStatus && review.author._id.equals(currentStatus._id)) { %>
+        <form
         class="mb-3 mt-3"
         method="post"
         action="/listings/<%=listingId._id%>/reviews/<%=review._id%>?_method=delete"
       >
         <button class="btn btn-sm btn-dark">Delete</button>
       </form>
+      <% } %>
+      
     </div>
     <%}%>
   </div>
+
+  <hr />
+  <h4><b>Map Location</b></h4>
+  <div id="listing-map"></div>
 </div>
+
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+<script>
+  const mapContainer = document.getElementById("listing-map");
+  const listingLocation = <%- JSON.stringify(listingId.location) %>;
+  const listingCountry = <%- JSON.stringify(listingId.country) %>;
+  const fallbackCoords = [20.5937, 78.9629];
+  const countryCodeMap = {
+    india: "in",
+    "united states": "us",
+    usa: "us",
+    "united kingdom": "gb",
+    uk: "gb",
+    canada: "ca",
+    australia: "au",
+  };
+
+  const typoMap = {
+    himinchal: "himachal",
+    himanchal: "himachal",
+    himachel: "himachal",
+    artices: "arctic",
+  };
+
+  const normalizeText = (text) => {
+    if (!text) return "";
+    let normalized = text.trim().toLowerCase();
+    Object.entries(typoMap).forEach(([wrong, correct]) => {
+      const pattern = new RegExp(`\\b${wrong}\\b`, "gi");
+      normalized = normalized.replace(pattern, correct);
+    });
+    return normalized;
+  };
+
+  const normalizedLocation = normalizeText(listingLocation);
+  const normalizedCountry = normalizeText(listingCountry);
+  const countryCode = countryCodeMap[normalizedCountry] || "";
+  const countryToken = normalizedCountry || "india";
+
+  const map = L.map(mapContainer).setView(fallbackCoords, 4);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18,
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(map);
+
+  const geocodeWithFallback = async () => {
+    const queryVariants = [
+      `${listingLocation}, ${listingCountry}`,
+      `${normalizedLocation}, ${normalizedCountry}`,
+      `${normalizedLocation}, ${countryToken}`,
+      `${normalizedLocation}, ${countryToken}, india`,
+    ];
+
+    for (const query of queryVariants) {
+      const params = new URLSearchParams({
+        format: "json",
+        limit: "1",
+        addressdetails: "1",
+        q: query,
+      });
+
+      if (countryCode) {
+        params.set("countrycodes", countryCode);
+      }
+
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?${params.toString()}`,
+        );
+        const data = await response.json();
+        if (Array.isArray(data) && data.length > 0) {
+          return data[0];
+        }
+      } catch (err) {
+        // Try next query variant if this one fails.
+      }
+    }
+
+    return null;
+  };
+
+  geocodeWithFallback().then((result) => {
+    if (!result) {
+      L.marker(fallbackCoords)
+        .addTo(map)
+        .bindPopup(`${listingLocation}, ${listingCountry}`)
+        .openPopup();
+      return;
+    }
+
+    const coords = [parseFloat(result.lat), parseFloat(result.lon)];
+    map.setView(coords, 12);
+    L.marker(coords)
+      .addTo(map)
+      .bindPopup(`${listingLocation}, ${listingCountry}`)
+      .openPopup();
+  });
+</script>
 

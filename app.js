@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV != "production") {
+  require("dotenv").config();
+}
+
 const express = require("express");
 const app = express();
 const path = require("path");
@@ -6,6 +10,14 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");
+// connect-mongo exports a function/class; depending on module interop the default
+// export may be nested under `.default`.  Ensure we reference the correct object.
+let MongoStore = require("connect-mongo");
+// if imported via CommonJS and the export is default-wrapped, unwrap it
+if (MongoStore && MongoStore.default) {
+  MongoStore = MongoStore.default;
+}
+
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
@@ -14,6 +26,7 @@ const User = require("./models/user.js");
 const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
+const { log } = require("console");
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -23,20 +36,52 @@ app.use(express.static(path.join(__dirname, "public")));
 app.engine("ejs", ejsMate);
 
 //db connection establish
+const dburl = process.env.DB_URL;
+
 async function main() {
-  await mongoose.connect("mongodb://127.0.0.1:27017/wonderPlace");
+  await mongoose.connect(dburl, {
+    serverSelectionTimeoutMS: 10000,
+  });
 }
 main()
   .then(() => {
     console.log("connected to database");
+    app.listen(3000, () => {
+      console.log(`server is listening at http://localhost:3000/listings`);
+    });
   })
   .catch((err) => {
-    console.log(err);
+    console.log("database connection failed:", err.message);
+    if (/ssl|tls|alert number 80/i.test(err.message)) {
+      console.log(
+        "TLS handshake failed. Check Atlas Network Access (IP whitelist), firewall/VPN/proxy, and use a fresh Atlas driver URI."
+      );
+    }
+    if (/whitelist|IP that isn't whitelisted/i.test(err.message)) {
+      console.log(
+        "Your current machine IP is not allowed in Atlas. Add it in Atlas -> Network Access."
+      );
+    }
+    process.exit(1);
   });
 
 //express-session
+// create store using connect-mongo API
+const store = MongoStore.create({
+  mongoUrl: dburl,
+  crypto: {
+    secret: process.env.SECRET,
+  },
+  touchAfter: 24 * 3600,
+});
+
+store.on("error", () => {
+  console.log("error in mongo sessio store", err);
+});
+
 const sessionOptions = {
-  secret: "mysupersecretcode",
+  store,
+  secret: process.env.SECRET,
   resave: false,
   saveUninitialized: true,
   cookie: {
@@ -62,14 +107,15 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req, res, next) => {
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
-  res.locals.currentStatus = req.user;
+  // always define the property so templates can reference it safely
+  res.locals.currentStatus = req.user || null;
   next();
 });
 
 //root route
-app.get("/", (req, res) => {
-  res.send("i am groot");
-});
+// app.get("/", (req, res) => {
+//   res.send("i am groot");
+// });
 
 // app.get("/demo", async (req, res) => {
 //   let demoUser = new User({
@@ -97,7 +143,3 @@ app.use((err, req, res, next) => {
   // res.status(statusCode).send(message);
 });
 
-//listening route
-app.listen(3000, () => {
-  console.log(`server is listening at http://localhost:3000/listings`);
-});

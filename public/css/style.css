@@ -7,7 +7,7 @@ body {
 
 /* Navbar */
 .navbar {
-  height: 5.5rem;
+  min-height: 5.5rem;
   background-color: white;
 }
 
@@ -18,6 +18,29 @@ body {
 
 .nav-link {
   color: #222222 !important;
+}
+
+@media (max-width: 767.98px) {
+  .navbar {
+    min-height: auto;
+  }
+
+  .navbar-collapse {
+    padding: 0.75rem 0 1rem;
+  }
+
+  .navbar-nav {
+    gap: 0.25rem;
+  }
+
+  .nav-search-form {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+
+  .search-inp {
+    padding: 0.3rem 0.8rem;
+  }
 }
 
 /* Footer */
@@ -31,19 +54,27 @@ body {
 }
 
 .f-info-links{
-  width: 100%
+  /* center links within their container */
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
 }
 .f-info-socials{
-  width: 100%
+  /* center social icons */
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
 }
 
 .f-info {
   display: flex;
+  flex-direction: column;
   height: 8rem;
   background-color: #ebebeb;
   justify-content: center;
-  flex-wrap: wrap;
-  align-items: space-evenly;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
 }
 
 /* cards */
@@ -99,4 +130,11 @@ body {
 
 .show-btn {
   display: flex;
+}
+
+#listing-map {
+  height: 320px;
+  width: 100%;
+  border-radius: 0.75rem;
+  margin: 1rem 0 1.5rem;
 }
