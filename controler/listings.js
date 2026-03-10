@@ -171,7 +171,7 @@ module.exports.update = async (req, res) => {
   }
 
   req.flash("success", "Listing Updated!");
-  res.redirect("/listings");
+  res.redirect("/listings/${id}");
 };
 
 module.exports.destroy = async (req, res) => {
