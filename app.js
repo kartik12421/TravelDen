@@ -113,9 +113,9 @@ app.use((req, res, next) => {
 });
 
 //root route
-// app.get("/", (req, res) => {
-//   res.send("i am groot");
-// });
+app.get("/", (req, res) => {
+  res.redirect("/listings");
+});
 
 // app.get("/demo", async (req, res) => {
 //   let demoUser = new User({
